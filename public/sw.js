@@ -1,5 +1,5 @@
 /// Service Worker for Ketan's Fitness Tracker PWA
-const CACHE_NAME = 'fitness-tracker-v1';
+const CACHE_NAME = 'fitness-tracker-v2';
 const OFFLINE_URL = '/';
 
 // Assets to precache on install
@@ -117,20 +117,44 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click — open or focus the app
+// Notification click — open or focus the app, handle actions
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const targetUrl = event.notification.data?.url || '/';
+  const tag = event.notification.data?.tag || event.notification.tag || '';
+  const action = event.action; // 'mark-done' or '' (body click)
 
+  event.notification.close();
+
+  if (action === 'mark-done') {
+    // Send mark-done message to all clients
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+        for (const client of clients) {
+          client.postMessage({ type: 'MARK_DONE', tag });
+        }
+        // If no client open, show a confirmation notification
+        if (clients.length === 0) {
+          return self.registration.showNotification('✅ Marked as Done', {
+            body: 'Open the app to see your updated log.',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: 'done-confirm',
+            vibrate: [100],
+          });
+        }
+      })
+    );
+    return;
+  }
+
+  // Default: open or focus the app
+  const targetUrl = event.notification.data?.url || '/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      // Focus existing window if open
       for (const client of clients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           return client.focus();
         }
       }
-      // Otherwise open new window
       return self.clients.openWindow(targetUrl);
     })
   );
@@ -139,13 +163,23 @@ self.addEventListener('notificationclick', (event) => {
 // Message handler — receive notifications from the app
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'notification') {
+    const actions = [];
+    const tag = event.data.tag || 'default';
+
+    // Add "Mark as Done" action for meal and workout notifications
+    if (tag.startsWith('meal-') || tag === 'workout' || tag === 'water') {
+      actions.push({ action: 'mark-done', title: '✅ Mark as Done' });
+    }
+
     self.registration.showNotification(event.data.title, {
       body: event.data.body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: event.data.tag || 'default',
+      tag,
       renotify: true,
       vibrate: [200, 100, 200],
+      actions,
+      data: { tag },
     });
   }
 
@@ -180,6 +214,8 @@ async function checkAndSendReminders() {
       tag: 'water',
       renotify: true,
       vibrate: [200, 100, 200],
+      actions: [{ action: 'mark-done', title: '✅ Done' }],
+      data: { tag: 'water' },
     });
   }
 
@@ -195,6 +231,8 @@ async function checkAndSendReminders() {
           tag: `meal-${idx}`,
           renotify: true,
           vibrate: [200, 100, 200],
+          actions: [{ action: 'mark-done', title: '✅ Mark Eaten' }],
+          data: { tag: `meal-${idx}` },
         });
       }
     });
@@ -209,6 +247,8 @@ async function checkAndSendReminders() {
       tag: 'workout',
       renotify: true,
       vibrate: [200, 100, 200],
+      actions: [{ action: 'mark-done', title: '✅ Done' }],
+      data: { tag: 'workout' },
     });
   }
 }

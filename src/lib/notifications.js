@@ -64,7 +64,7 @@ export async function requestPermission() {
 function sendNotification(title, body, tag) {
   if (Notification.permission !== 'granted') return;
 
-  // Prefer service worker notifications (works in background on mobile)
+  // Prefer service worker notifications (works in background on mobile, supports actions)
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'notification', title, body, tag });
     return;
@@ -73,6 +73,10 @@ function sendNotification(title, body, tag) {
   // Fallback: try service worker registration directly
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then((registration) => {
+      const actions = [];
+      if (tag && (tag.startsWith('meal-') || tag === 'workout' || tag === 'water')) {
+        actions.push({ action: 'mark-done', title: '✅ Done' });
+      }
       registration.showNotification(title, {
         body,
         icon: '/icon-192.png',
@@ -80,9 +84,10 @@ function sendNotification(title, body, tag) {
         tag,
         renotify: true,
         vibrate: [200, 100, 200],
+        actions,
+        data: { tag },
       });
     }).catch(() => {
-      // Last resort: basic Notification API
       try {
         new Notification(title, { body, icon: '/icon-192.png', tag, renotify: true });
       } catch {
@@ -209,10 +214,38 @@ export function restartNotifications() {
 /**
  * Send a test notification to verify it works
  */
-export function sendTestNotification() {
-  sendNotification(
-    '✅ Notifications Active',
-    'You will now receive meal, workout, and water reminders!',
-    'test'
-  );
+export async function sendTestNotification() {
+  if (Notification.permission !== 'granted') {
+    const perm = await requestPermission();
+    if (perm !== 'granted') return;
+  }
+
+  // Try service worker first (required for PWA/iOS)
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification('\u2705 Notifications Active', {
+        body: 'You will now receive meal, workout, and water reminders!',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'test',
+        renotify: true,
+        vibrate: [200, 100, 200],
+      });
+      return;
+    } catch (err) {
+      console.warn('[Notification] SW showNotification failed:', err);
+    }
+  }
+
+  // Fallback: basic Notification API
+  try {
+    new Notification('\u2705 Notifications Active', {
+      body: 'You will now receive meal, workout, and water reminders!',
+      icon: '/icon-192.png',
+      tag: 'test',
+    });
+  } catch {
+    // Silently fail
+  }
 }

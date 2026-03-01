@@ -3,7 +3,7 @@ import {
   Home, Utensils, Dumbbell, TrendingDown, Settings,
   CheckCircle, Plus, ChevronDown, ChevronUp, Flame,
   Scale, RefreshCw, X, Check, Info, Moon, Bell, BellOff, Droplets, Clock,
-  Download, Smartphone
+  Download, Smartphone, ChevronLeft, ChevronRight, Calendar
 } from 'lucide-react';
 import {
   getNotificationSettings, saveNotificationSettings, requestPermission,
@@ -30,10 +30,10 @@ const USER = {
   weight: 85.5,
   goal: 'Fat loss + Muscle Building',
   gymTime: '7:30 AM \u2013 8:30 AM',
-  calories: 1731,
-  protein: 111.2,
-  carbs: 210.1,
-  fat: 49.6,
+  calories: 1750,
+  protein: 140,
+  carbs: 195,
+  fat: 45,
   stepGoal: 10000,
   targetWeight: 75,
 };
@@ -52,39 +52,154 @@ const WORKOUTS = {
   A: {
     name: 'Push Day',
     exercises: [
-      { name: 'Incline DB Press', sets: 3, reps: '6\u201312', notes: 'Think of bringing arms closer together, not pressing up' },
-      { name: 'DB Overhead Press', sets: 3, reps: '6\u201312', notes: 'Keep elbows under dumbbells throughout ROM' },
-      { name: 'Dumbbell Press', sets: 3, reps: '6\u201312', notes: 'Arms 45\u201360\u00b0 from torso' },
-      { name: 'Cable Decline Crossover', sets: 3, reps: '6\u201312', notes: 'Can do Decline DB Press if cable unavailable' },
-      { name: 'Cable Side Raise', sets: 3, reps: '6\u201312', notes: 'Lower arm slowly; DB lateral raise if unavailable' },
-      { name: 'Cross Body Tricep Pushdown', sets: 3, reps: '6\u201312', notes: 'Elbows in line with cable' },
-      { name: 'Overhead Tricep Extension', sets: 3, reps: '6\u201312', notes: 'Can do 1 hand at a time or with DB' },
-      { name: 'AB Crunches', sets: 3, reps: '6\u201312', notes: 'Curl your spine, don\'t just sit up' },
+      {
+        name: 'Incline DB Press', sets: 3, reps: '6–12',
+        notes: 'Think of bringing arms closer together, not pressing up',
+        alt: 'Incline Barbell Press / Incline Smith Machine Press',
+        form: 'Set bench to 30–45°. Grip slightly wider than shoulders. Lower dumbbells to upper chest level with elbows at 45° from torso. Press upward at a slight inward angle, squeezing chest at top. 3s down, 1s pause, 3s up.',
+      },
+      {
+        name: 'DB Overhead Press', sets: 3, reps: '6–12',
+        notes: 'Keep elbows under dumbbells throughout ROM',
+        alt: 'Barbell Overhead Press / Seated Machine Shoulder Press',
+        form: 'Sit upright or stand with core braced. Start with dumbbells at ear level, elbows at 90°. Press straight overhead until arms are fully extended. Don\'t lean back. Lower to ear level with control.',
+      },
+      {
+        name: 'Dumbbell Press', sets: 3, reps: '6–12',
+        notes: 'Arms 45–60° from torso',
+        alt: 'Barbell Bench Press / Machine Chest Press',
+        form: 'Lie flat on bench, feet planted firmly. Lower dumbbells to chest level keeping arms 45–60° from torso (not flared at 90°). Press up bringing dumbbells slightly together at top. Full stretch at bottom.',
+      },
+      {
+        name: 'Cable Decline Crossover', sets: 3, reps: '6–12',
+        notes: 'Targets lower chest fibers',
+        alt: 'Decline DB Flyes / Decline DB Press / Dip Machine',
+        form: 'Use high pulleys. Step forward into split stance with slight lean. Bring handles down and together in an arc to hip level, crossing slightly. Squeeze lower chest hard. Keep slight elbow bend throughout. Slow return.',
+      },
+      {
+        name: 'Cable Side Raise', sets: 3, reps: '6–12',
+        notes: 'Lower arm slowly; control the negative',
+        alt: 'Dumbbell Lateral Raise / Machine Lateral Raise',
+        form: 'Stand sideways to low cable pulley. Grab handle with far hand. Raise arm to shoulder height with 15° forward lean. Lead with elbow, pinky slightly higher than thumb. 2s up, 3s down. Don\'t swing.',
+      },
+      {
+        name: 'Cross Body Tricep Pushdown', sets: 3, reps: '6–12',
+        notes: 'Elbows in line with cable',
+        alt: 'Rope Pushdown / Dumbbell Kickback / V-Bar Pushdown',
+        form: 'Set cable at head height with single handle. Stand slightly to the side. Push handle across body and downward with one arm, elbow pinned to your side. Fully extend at bottom, squeeze tricep. 3s negative back up.',
+      },
+      {
+        name: 'Overhead Tricep Extension', sets: 3, reps: '6–12',
+        notes: 'Can do 1 hand at a time or with DB',
+        alt: 'Skull Crushers (EZ Bar) / Dumbbell Overhead Extension / French Press',
+        form: 'Face away from cable or hold dumbbell overhead. Upper arms close to ears and stationary. Hinge at elbows only, lowering weight behind head to 90° elbow angle. Extend fully overhead. Keep core tight to avoid arching.',
+      },
+      {
+        name: 'AB Crunches', sets: 3, reps: '6–12',
+        notes: 'Curl your spine, don\'t just sit up',
+        alt: 'Cable Crunch / Hanging Knee Raise / Ab Roller',
+        form: 'Lie face up, knees bent 90°, feet flat. Place hands across chest (not behind neck). Curl upper spine lifting shoulders off floor — think "ribs to pelvis". Hold top 1s, slow lower. Don\'t pull neck or use hip flexors.',
+      },
     ],
   },
   B: {
     name: 'Pull Day',
     exercises: [
-      { name: 'Neutral Grip Lat Pulldown', sets: 3, reps: '6\u201312', notes: 'Use pronated grip on straight bar if unavailable' },
-      { name: 'Reverse Pec Deck', sets: 3, reps: '6\u201312', notes: 'Can use dumbbells' },
-      { name: 'Cable Row', sets: 3, reps: '6\u201312', notes: 'Pull elbows close to torso for lats' },
-      { name: 'Wide Grip Rows', sets: 3, reps: '6\u201312', notes: 'Arms at 45\u00b0 to torso \u2014 targets mid-back' },
-      { name: 'Hammer Curl', sets: 3, reps: '6\u201312', notes: 'Don\'t swing arms inward' },
-      { name: 'Supported Bicep Curl', sets: 3, reps: '6\u201312', notes: 'Slight tension on biceps at start' },
-      { name: 'BB Shrugs', sets: 3, reps: '6\u201312', notes: 'Lean forward, squeeze shoulder blades, 1.5x shoulder-width grip' },
-      { name: 'Spinal Extension', sets: 3, reps: '6\u201312', notes: 'Strengthens spinal erectors; floor hyperextension if no machine' },
-      { name: 'Wrist Flexions + Extensions', sets: 3, reps: '6\u201312', notes: 'Both directions' },
+      {
+        name: 'Neutral Grip Lat Pulldown', sets: 3, reps: '6–12',
+        notes: 'Use pronated grip on straight bar if unavailable',
+        alt: 'Wide Grip Lat Pulldown / Pull-ups / Band Assisted Pull-ups',
+        form: 'Use neutral (palms facing) grip handle. Sit with thighs snug under pad. Lean back 10–15°. Pull bar to upper chest driving elbows down and back. Squeeze lats hard at bottom for 1s. Control return — don\'t let weight yank arms up.',
+      },
+      {
+        name: 'Reverse Pec Deck', sets: 3, reps: '6–12',
+        notes: 'Squeeze rear delts at full contraction',
+        alt: 'Face Pulls (rope) / Bent-Over Dumbbell Reverse Flyes',
+        form: 'Sit facing the pad, chest against it. Grip handles at shoulder height with arms nearly straight (slight elbow bend). Pull handles back in an arc squeezing rear delts. Hold 1s at peak contraction. 3s negative return.',
+      },
+      {
+        name: 'Cable Row', sets: 3, reps: '6–12',
+        notes: 'Pull elbows close to torso for lats',
+        alt: 'Seated Machine Row / Single-Arm Dumbbell Row / Barbell Bent-Over Row',
+        form: 'Sit upright with feet on platform, slight knee bend. Pull handle to lower chest / upper abs. Drive elbows straight back, close to body. Squeeze shoulder blades together at end. Return with control — don\'t round forward.',
+      },
+      {
+        name: 'Wide Grip Rows', sets: 3, reps: '6–12',
+        notes: 'Arms at 45° to torso — targets mid-back',
+        alt: 'T-Bar Row / Wide Grip Dumbbell Row / Chest-Supported Row',
+        form: 'Use wide grip handle on cable or wide grip barbell. Pull to mid-chest with elbows flared at 45° from torso. Focus on squeezing mid-back and rear delts. Keep chest up, avoid rounding lower back.',
+      },
+      {
+        name: 'Hammer Curl', sets: 3, reps: '6–12',
+        notes: 'Don\'t swing arms inward',
+        alt: 'Cross-Body Hammer Curl / Rope Cable Curl / Reverse Curl',
+        form: 'Stand with dumbbells at sides, palms facing each other (neutral grip). Curl weight up keeping wrist neutral throughout — don\'t rotate. Elbows stay pinned at sides, no swinging body. Squeeze bicep/brachialis at top. 3s negative.',
+      },
+      {
+        name: 'Supported Bicep Curl', sets: 3, reps: '6–12',
+        notes: 'Slight tension on biceps at start',
+        alt: 'Preacher Curl Machine / Incline Dumbbell Curl / Spider Curl',
+        form: 'Use preacher bench or incline bench to support arms. Start with slight tension on bicep (don\'t fully extend / hyperextend elbow). Curl up squeezing bicep hard at top. Slow 3-second negative. Keep upper arm stationary on pad.',
+      },
+      {
+        name: 'BB Shrugs', sets: 3, reps: '6–12',
+        notes: 'Lean forward, squeeze shoulder blades, 1.5x shoulder-width grip',
+        alt: 'Dumbbell Shrugs / Smith Machine Shrugs / Trap Bar Shrugs',
+        form: 'Grip barbell at 1.5× shoulder width. Lean forward slightly (15°) for better trap activation. Shrug shoulders straight up toward ears — don\'t roll. Squeeze traps at top for 2 seconds. 3s controlled lower.',
+      },
+      {
+        name: 'Spinal Extension', sets: 3, reps: '6–12',
+        notes: 'Strengthens spinal erectors',
+        alt: 'Hyperextension (Roman Chair) / Superman (Floor) / Reverse Hyper',
+        form: 'On hyperextension bench, cross arms at chest. Hinge at hips lowering torso toward floor. Extend back up to neutral spine position — don\'t hyperextend past neutral. Slow and controlled, squeeze lower back at top.',
+      },
+      {
+        name: 'Wrist Flexions + Extensions', sets: 3, reps: '6–12',
+        notes: 'Both directions for balanced forearms',
+        alt: 'Wrist Roller / Grip Squeezer / Farmer\'s Walk',
+        form: 'Rest forearms on bench, wrists hanging off edge. Flexion: palms up, curl weight up. Extension: palms down, lift weight up. Full range of motion each rep. Hold top for 2 seconds. Light weight, high quality reps.',
+      },
     ],
   },
   C: {
     name: 'Legs Day',
     exercises: [
-      { name: 'Smith Machine Squats', sets: 3, reps: '6\u201312', notes: 'Feet slightly forward for quad emphasis' },
-      { name: 'Leg Extension', sets: 3, reps: '6\u201312', notes: 'Knee pointing straight up' },
-      { name: 'Seated Leg Curl', sets: 3, reps: '6\u201312', notes: 'Stabilize legs, focus on hamstring' },
-      { name: 'Leg Press', sets: 3, reps: '6\u201312', notes: 'Lock out knees slowly, don\'t hyperextend' },
-      { name: 'Romanian Deadlift', sets: 3, reps: '6\u201312', notes: 'Don\'t round the back' },
-      { name: 'Standing Calf Raise', sets: 3, reps: '6\u201312', notes: 'No bouncing at bottom' },
+      {
+        name: 'Smith Machine Squats', sets: 3, reps: '6–12',
+        notes: 'Feet slightly forward for quad emphasis',
+        alt: 'Barbell Back Squat / Goblet Squat / Hack Squat Machine',
+        form: 'Position bar on upper traps. Feet shoulder-width, slightly forward of bar, toes turned out 15–30°. Squat to parallel or below keeping chest up. Drive through full foot (heel emphasis). Knees track over toes — don\'t cave inward.',
+      },
+      {
+        name: 'Leg Extension', sets: 3, reps: '6–12',
+        notes: 'Knee pointing straight up',
+        alt: 'Sissy Squat / Bulgarian Split Squat (quad focus) / Front Squat',
+        form: 'Sit with back flush against pad, ankles behind lower roller. Adjust pad so pivot aligns with knee joint. Extend legs fully, squeeze quads hard at top for 1s. Lower slowly (3s negative). Keep toes pointing straight up.',
+      },
+      {
+        name: 'Seated Leg Curl', sets: 3, reps: '6–12',
+        notes: 'Stabilize legs, focus on hamstring',
+        alt: 'Lying Leg Curl / Nordic Hamstring Curl / Swiss Ball Hamstring Curl',
+        form: 'Sit with pad behind ankles, thigh pad snug above knees (prevents hips rising). Curl weight down and under, squeezing hamstrings at full contraction. 1s hold. Slow release back up (3s). Keep hips stable throughout.',
+      },
+      {
+        name: 'Leg Press', sets: 3, reps: '6–12',
+        notes: 'Don\'t hyperextend knees at top',
+        alt: 'Hack Squat Machine / Front Squat / Belt Squat',
+        form: 'Sit at 45° leg press. Feet shoulder-width apart in middle of platform. Press up to near-lockout (don\'t fully lock / hyperextend knees). Lower until knees reach 90°. Keep lower back pressed into pad throughout. Full foot contact.',
+      },
+      {
+        name: 'Romanian Deadlift', sets: 3, reps: '6–12',
+        notes: 'Don\'t round the back',
+        alt: 'Stiff-Leg Deadlift / Cable Pull-Through / Dumbbell RDL / Good Morning',
+        form: 'Stand with barbell/dumbbells at hips, slight knee bend (15–20°). Hinge at hips pushing butt straight back, lower weight along legs. Stop when you feel max hamstring stretch (mid-shin). Drive hips forward to stand. Back stays flat throughout.',
+      },
+      {
+        name: 'Standing Calf Raise', sets: 3, reps: '6–12',
+        notes: 'No bouncing at bottom',
+        alt: 'Seated Calf Raise / Leg Press Calf Raise / Single-Leg Calf Raise',
+        form: 'Stand on edge of platform with balls of feet on edge. Rise up on toes fully, squeeze calves hard at top for 2s. Lower slowly below platform level to full stretch (3s). No bouncing — pause at bottom. Straight knees throughout.',
+      },
     ],
   },
 };
@@ -94,89 +209,93 @@ const MEALS = [
     id: 'meal1',
     name: 'Pre-Workout',
     time: '6:45 AM',
-    calories: 350,
-    protein: 15,
-    carbs: 45,
-    fat: 12,
+    calories: 370,
+    protein: 30,
+    carbs: 38,
+    fat: 13,
     items: [
-      'Smoothie: \u00bd scoop Whey Iso-Max (FUEL ONE)',
+      '1 scoop Whey Protein (25g) in 300ml water',
       '1 large banana (100g)',
       '1 date (8g)',
       '10 almonds (15g)',
       '4 walnut halves (8g)',
-      'Blended in 300ml water',
     ],
     swaps: [
-      'Have items separately instead of smoothie',
+      'Whey swap: 150g Greek yoghurt (low-fat)',
       'Replace dates with 1 dried fig',
-      'Can add 2 elaichi bananas instead',
+      'Can use 2 elaichi bananas instead of 1 large',
+      'Have items separately or blend as smoothie',
     ],
-    goal: 'Fast fuel, no heavy foods before training',
+    goal: 'Fast fuel + protein hit before training (Scoop 1 of 2)',
   },
   {
     id: 'meal2',
     name: 'Post-Workout Breakfast',
     time: '9:00 AM',
-    calories: 480,
-    protein: 45,
-    carbs: 55,
-    fat: 10,
+    calories: 430,
+    protein: 42,
+    carbs: 52,
+    fat: 7,
     items: [
-      '1 scoop Whey Iso-Max in 400ml water',
-      'Poha: 60g rice flakes (raw) + 50g potato + 50g tomato',
-      'Fruit: 100g pineapple',
+      '1 scoop Whey Protein (25g) in 300ml water',
+      'MuscleBlaze High Protein Muesli (50g) with 100ml low-fat milk',
+      'Fruit: 100g pineapple or seasonal fruit',
       'Supplements: Vit D3+K2 (1 tab) + Multivitamins (1 tab)',
     ],
     swaps: [
-      'Whey swap: 1 whole egg + 4 egg whites, or 100g paneer, or 100g tofu',
-      'Poha swap: Lemon rice (60g raw), 4 medium Rice Dosas, 4 small Idlis, 60g Oatmeal',
+      'Muesli swap: 60g oatmeal, 60g poha, 4 small idlis',
+      'Whey swap: 1 whole egg + 4 egg whites, or 100g paneer',
       'Fruit swap: Papaya, kiwi, guava, orange, berries',
+      'Milk swap: 100ml soy milk or almond milk',
     ],
-    goal: 'Muscle protein synthesis + glycogen replenishment',
+    goal: 'Muscle protein synthesis + glycogen refill (Scoop 2 of 2)',
   },
   {
     id: 'meal3',
     name: 'Lunch',
     time: '1:00 PM',
-    calories: 520,
-    protein: 35,
-    carbs: 65,
+    calories: 540,
+    protein: 38,
+    carbs: 62,
     fat: 15,
     items: [
-      'Chicken Fried Rice: 60g white rice (raw) + 75g skinless chicken breast (raw)',
+      'Chicken Fried Rice: 60g white rice (raw) + 100g skinless chicken breast (raw)',
       'Veggies: 50g tomato + 50g carrot + 50g capsicum',
       'Salad: 25g cucumber + 25g carrot',
       '\u00bd cup yoghurt (80g)',
     ],
     swaps: [
-      'Protein swap: 75g fish/prawns, 1 whole + 3 egg whites, 75g paneer/tofu',
+      'Protein swap: 100g fish/prawns, 1 whole + 4 egg whites, 100g paneer/tofu',
       'Rice swap: 3 medium rotis (preferred: gluten-free flour)',
       'Recipe swap: Chicken Curry, Stir Fry, Korma, Kadai Chicken',
-      'Salad swap: Stir-fried or sauteed low-FODMAP vegetables',
+      'Salad swap: Stir-fried or sautéed low-FODMAP vegetables',
     ],
-    goal: 'Main meal \u2013 balanced macros for sustained energy',
+    goal: 'Main meal — balanced macros for sustained energy',
   },
   {
     id: 'meal4',
     name: 'Dinner',
     time: '7:30 PM',
-    calories: 381,
-    protein: 35,
-    carbs: 40,
+    calories: 410,
+    protein: 30,
+    carbs: 43,
     fat: 10,
     items: [
       'Egg Curry Rice: 1 whole egg + 4 egg whites',
       '60g white rice (raw) + 100g tomato + 50g capsicum + 50g french beans',
-      'Supplement: Creatine 3g (FUEL ONE) \u2014 mix well in water',
+      'Supplement: Creatine 3g — mix well in water',
     ],
     swaps: [
-      'Protein swap: 1 scoop whey, 100g chicken, 100g fish, 100g paneer/tofu',
+      'Protein swap: 100g chicken, 100g fish, 100g paneer/tofu',
       'Rice swap: 3 medium rotis',
       'Recipe swap: Egg Bhurji Rice, Palak Egg Rice, Lemon Rice + Eggs on side',
     ],
-    goal: 'Evening recovery \u2013 high protein, moderate carbs',
+    goal: 'Evening recovery — high protein, moderate carbs',
   },
 ];
+// Daily totals: ~1750 kcal | ~140g protein | ~195g carbs | ~45g fat
+// Whey: 2 scoops/day (Meal 1 + Meal 2)
+// MuscleBlaze High Protein Muesli: Meal 2 (Post-Workout Breakfast)
 
 const getDateKey = (date = new Date()) => date.toISOString().slice(0, 10);
 
@@ -528,11 +647,12 @@ const WorkoutLogger = ({ workout, dateKey, workoutLog, setWorkoutLog }) => {
   };
 
   const [exercises, setExercises] = useState(() =>
-    workout.exercises.map(ex => ({ name: ex.name, notes: ex.notes, sets: getInitialSets(ex) }))
+    workout.exercises.map(ex => ({ name: ex.name, notes: ex.notes, alt: ex.alt, form: ex.form, sets: getInitialSets(ex) }))
   );
   const [cardio, setCardio] = useState(workoutLog?.cardio || false);
   const [cardioNotes, setCardioNotes] = useState(workoutLog?.cardioNotes || '');
   const [saved, setSaved] = useState(false);
+  const [expandedForm, setExpandedForm] = useState({});
 
   const updateSet = (exIdx, setIdx, field, value) => {
     setExercises(prev => {
@@ -588,7 +708,29 @@ const WorkoutLogger = ({ workout, dateKey, workoutLog, setWorkoutLog }) => {
               )}
             </div>
             {ex.notes && (
-              <p className="text-xs mb-3 italic" style={{ color: COLORS.textSecondary }}>{ex.notes}</p>
+              <p className="text-xs mb-2 italic" style={{ color: COLORS.textSecondary }}>{ex.notes}</p>
+            )}
+            {/* Alternative exercise */}
+            {ex.alt && (
+              <div className="mb-2 px-2 py-1.5 rounded-lg text-xs" style={{ backgroundColor: '#1e2535' }}>
+                <span style={{ color: COLORS.teal }}>↔ Alt:</span>{' '}
+                <span style={{ color: COLORS.textSecondary }}>{ex.alt}</span>
+              </div>
+            )}
+            {/* Form & technique toggle */}
+            {ex.form && (
+              <button
+                onClick={() => setExpandedForm(prev => ({ ...prev, [ex.name]: !prev[ex.name] }))}
+                className="mb-3 flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
+                style={{ backgroundColor: expandedForm[ex.name] ? `${COLORS.teal}15` : '#1e2535', color: COLORS.teal }}>
+                <Info size={11} /> {expandedForm[ex.name] ? 'Hide' : 'Show'} Form Guide
+              </button>
+            )}
+            {expandedForm[ex.name] && ex.form && (
+              <div className="mb-3 px-3 py-2 rounded-lg text-xs leading-relaxed"
+                style={{ backgroundColor: `${COLORS.teal}08`, border: `1px solid ${COLORS.teal}30`, color: COLORS.textSecondary }}>
+                <span style={{ color: COLORS.teal, fontWeight: 600 }}>📐 Form:</span> {ex.form}
+              </div>
             )}
             <div className="grid grid-cols-4 gap-2 text-xs mb-1" style={{ color: COLORS.textSecondary }}>
               <span>Set</span><span>Weight</span><span>Reps</span><span>Done</span>
@@ -702,89 +844,250 @@ const WorkoutHistory = ({ dateKey }) => {
   );
 };
 
+const ExerciseInfoList = ({ exercises }) => {
+  const [expandedIdx, setExpandedIdx] = useState(null);
+  return (
+    <div className="space-y-2">
+      <p className="font-semibold text-sm" style={{ color: COLORS.textSecondary }}>
+        Exercises ({exercises.length})
+      </p>
+      {exercises.map((ex, i) => (
+        <div key={i} className="rounded-xl border overflow-hidden"
+          style={{ backgroundColor: COLORS.card, borderColor: COLORS.border }}>
+          <button className="w-full flex items-center justify-between p-3"
+            onClick={() => setExpandedIdx(expandedIdx === i ? null : i)}>
+            <div className="text-left">
+              <p className="text-sm font-semibold">{ex.name}</p>
+              <p className="text-xs" style={{ color: COLORS.textSecondary }}>{ex.sets}×{ex.reps}</p>
+            </div>
+            {expandedIdx === i
+              ? <ChevronUp size={14} color={COLORS.textSecondary} />
+              : <ChevronDown size={14} color={COLORS.textSecondary} />}
+          </button>
+          {expandedIdx === i && (
+            <div className="px-3 pb-3 space-y-2">
+              {ex.notes && (
+                <p className="text-xs italic" style={{ color: COLORS.textSecondary }}>💡 {ex.notes}</p>
+              )}
+              {ex.form && (
+                <div className="px-2 py-2 rounded-lg text-xs leading-relaxed"
+                  style={{ backgroundColor: `${COLORS.teal}08`, border: `1px solid ${COLORS.teal}30`, color: COLORS.textSecondary }}>
+                  <span style={{ color: COLORS.teal, fontWeight: 600 }}>📐 Form:</span> {ex.form}
+                </div>
+              )}
+              {ex.alt && (
+                <div className="px-2 py-1.5 rounded-lg text-xs" style={{ backgroundColor: '#1e2535' }}>
+                  <span style={{ color: COLORS.teal }}>↔ Alternatives:</span>{' '}
+                  <span style={{ color: COLORS.textSecondary }}>{ex.alt}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const WorkoutTab = ({ workoutLog, setWorkoutLog }) => {
   const today = new Date();
-  const workout = getTodayWorkout(today);
-  const dateKey = getDateKey(today);
+  const [selectedDate, setSelectedDate] = useState(today);
+  const workout = getTodayWorkout(selectedDate);
+  const dateKey = getDateKey(selectedDate);
+  const isToday = getDateKey(today) === dateKey;
   const [showGuidelines, setShowGuidelines] = useState(false);
 
-  if (workout.type === 'REST') {
-    return (
-      <div className="p-4 pb-24 flex flex-col items-center justify-center min-h-screen text-center space-y-4">
-        <Moon size={64} color={COLORS.textSecondary} />
-        <h2 className="text-3xl font-bold"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif", color: COLORS.accent }}>
-          Rest Day 🛏️
-        </h2>
-        <p style={{ color: COLORS.textSecondary }}>Recovery is where growth happens.</p>
-        <Card className="w-full text-left">
-          <p className="font-semibold mb-2" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Recovery Tips</p>
-          {['\ud83d\udeb6 Walk 10,000 steps','\ud83e\uddd8 Stretch for 15\u201320 minutes','\ud83d\ude34 Sleep 8 hours',
-            '\ud83d\udca7 Hydrate well \u2014 3\u20134 litres','\ud83e\udd57 Eat your full meal plan'].map((tip, i) => (
-            <p key={i} className="text-sm py-1" style={{ color: COLORS.textSecondary }}>{tip}</p>
-          ))}
-        </Card>
-      </div>
-    );
-  }
+  // Load the workout log for the selected day
+  const selectedLog = isToday ? workoutLog : window.storage?.get(`workout:${dateKey}`);
 
-  const workoutData = WORKOUTS[workout.type];
+  // Generate week centered around selectedDate
+  const weekStart = new Date(selectedDate);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Navigate weeks
+  const shiftWeek = (dir) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + dir * 7);
+    setSelectedDate(d);
+  };
 
   return (
     <div className="p-4 pb-24 space-y-4">
+      {/* Day Selector */}
       <div>
-        <h2 className="text-2xl font-bold" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-          {workoutData.name}
-          <span className="ml-2 text-base font-normal" style={{ color: COLORS.textSecondary }}>
-            — Workout {workout.type}
-          </span>
-        </h2>
-        <p className="text-sm" style={{ color: COLORS.textSecondary }}>{getDayName(today)}, {dateKey}</p>
-      </div>
-
-      <Card>
-        <p className="font-semibold mb-2 text-sm" style={{ color: COLORS.textSecondary }}>
-          Today's Exercises ({workoutData.exercises.length})
-        </p>
-        <div className="space-y-1">
-          {workoutData.exercises.map((ex, i) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span>{ex.name}</span>
-              <span style={{ color: COLORS.textSecondary }}>{ex.sets}×{ex.reps}</span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={() => shiftWeek(-1)} className="p-1 rounded-lg"
+            style={{ color: COLORS.textSecondary }}>
+            <ChevronLeft size={20} />
+          </button>
+          <p className="text-sm font-semibold" style={{ color: COLORS.textPrimary }}>
+            {selectedDate.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+          </p>
+          <button onClick={() => shiftWeek(1)} className="p-1 rounded-lg"
+            style={{ color: COLORS.textSecondary }}>
+            <ChevronRight size={20} />
+          </button>
         </div>
-      </Card>
-
-      <div className="rounded-xl border overflow-hidden"
-        style={{ backgroundColor: COLORS.card, borderColor: COLORS.border }}>
-        <button className="w-full flex items-center justify-between p-4"
-          onClick={() => setShowGuidelines(!showGuidelines)}>
-          <div className="flex items-center gap-2">
-            <Info size={16} color={COLORS.teal} />
-            <span className="font-semibold text-sm">Exercise Guidelines</span>
-          </div>
-          {showGuidelines ? <ChevronUp size={16} color={COLORS.textSecondary} /> : <ChevronDown size={16} color={COLORS.textSecondary} />}
-        </button>
-        {showGuidelines && (
-          <div className="px-4 pb-4 space-y-2">
-            {[
-              '\ud83d\udd25 Warm up: Same exercise at 50\u201380% weight for 1\u20133 sets',
-              '\u26a1 Stop 1\u20132 reps before failure (6\u201312 rep range)',
-              '\u23f1 Tempo: 3s up, 1s pause, 3s down',
-              '\u23f8 Rest 1\u20133 minutes between sets',
-              '\ud83d\udcc8 Each week: increase 1\u20132 reps; once exceeding rep range, increase weight',
-              '\ud83c\udd95 First week: do only 2 sets instead of 3',
-            ].map((tip, i) => (
-              <p key={i} className="text-sm" style={{ color: COLORS.textSecondary }}>{tip}</p>
-            ))}
-          </div>
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {weekDays.map((d) => {
+            const dk = getDateKey(d);
+            const isSelected = dk === dateKey;
+            const isTodayDay = dk === getDateKey(today);
+            const dayWorkout = getTodayWorkout(d);
+            const hasLog = !!window.storage?.get(`workout:${dk}`);
+            return (
+              <button key={dk} onClick={() => setSelectedDate(new Date(d))}
+                className="flex-1 min-w-[48px] flex flex-col items-center py-2 px-1 rounded-xl transition-all duration-200"
+                style={{
+                  backgroundColor: isSelected ? COLORS.accent : isTodayDay ? `${COLORS.accent}15` : '#1e2535',
+                  border: `1.5px solid ${isSelected ? COLORS.accent : isTodayDay ? COLORS.accent : 'transparent'}`,
+                }}>
+                <span className="text-[10px] font-medium"
+                  style={{ color: isSelected ? '#0d0f14' : COLORS.textSecondary }}>
+                  {dayNames[d.getDay()]}
+                </span>
+                <span className="text-base font-bold mt-0.5"
+                  style={{ color: isSelected ? '#0d0f14' : COLORS.textPrimary }}>
+                  {d.getDate()}
+                </span>
+                <span className="text-[9px] font-semibold mt-0.5"
+                  style={{ color: isSelected ? '#0d0f14' : dayWorkout.type === 'REST' ? COLORS.textSecondary : COLORS.teal }}>
+                  {dayWorkout.short}
+                </span>
+                {hasLog && (
+                  <div className="w-1.5 h-1.5 rounded-full mt-1"
+                    style={{ backgroundColor: isSelected ? '#0d0f14' : COLORS.accent }} />
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {!isToday && (
+          <button onClick={() => setSelectedDate(new Date())}
+            className="mt-2 text-xs flex items-center gap-1 mx-auto px-3 py-1 rounded-lg"
+            style={{ color: COLORS.accent, backgroundColor: `${COLORS.accent}15` }}>
+            <Calendar size={12} /> Go to Today
+          </button>
         )}
       </div>
 
-      <WorkoutLogger workout={{ ...workoutData, type: workout.type }}
-        dateKey={dateKey} workoutLog={workoutLog} setWorkoutLog={setWorkoutLog} />
-      <WorkoutHistory dateKey={dateKey} />
+      {/* Rest Day View */}
+      {workout.type === 'REST' ? (
+        <div className="flex flex-col items-center text-center space-y-4 py-8">
+          <Moon size={64} color={COLORS.textSecondary} />
+          <h2 className="text-3xl font-bold"
+            style={{ fontFamily: "'Barlow Condensed', sans-serif", color: COLORS.accent }}>
+            Rest Day 🛏️
+          </h2>
+          <p style={{ color: COLORS.textSecondary }}>Recovery is where growth happens.</p>
+          <Card className="w-full text-left">
+            <p className="font-semibold mb-2" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Recovery Tips</p>
+            {['🚶 Walk 10,000 steps','🧘 Stretch for 15–20 minutes','😴 Sleep 8 hours',
+              '💧 Hydrate well — 3–4 litres','🥗 Eat your full meal plan'].map((tip, i) => (
+              <p key={i} className="text-sm py-1" style={{ color: COLORS.textSecondary }}>{tip}</p>
+            ))}
+          </Card>
+        </div>
+      ) : (
+        /* Workout Day View */
+        <>
+          <div>
+            <h2 className="text-2xl font-bold" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+              {WORKOUTS[workout.type].name}
+              <span className="ml-2 text-base font-normal" style={{ color: COLORS.textSecondary }}>
+                — Workout {workout.type}
+              </span>
+            </h2>
+            <p className="text-sm" style={{ color: COLORS.textSecondary }}>
+              {getDayName(selectedDate)}, {dateKey}
+              {!isToday && <span style={{ color: COLORS.teal }}> (viewing past)</span>}
+            </p>
+          </div>
+
+          {/* Exercise List with Alternatives & Form */}
+          <ExerciseInfoList exercises={WORKOUTS[workout.type].exercises} />
+
+          {/* Saved Log View (for past days) */}
+          {!isToday && selectedLog && (
+            <Card>
+              <p className="font-semibold mb-3 text-sm flex items-center gap-2" style={{ color: COLORS.accent }}>
+                <CheckCircle size={16} /> Logged Workout
+              </p>
+              {selectedLog.exercises?.map((ex) => (
+                <div key={ex.name} className="mb-3">
+                  <p className="text-sm font-medium mb-1">{ex.name}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {ex.sets?.filter(s => s.done).map((s, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded text-xs"
+                        style={{ backgroundColor: '#1e2535', color: COLORS.textSecondary }}>
+                        {s.weight}kg × {s.reps}
+                      </span>
+                    ))}
+                    {ex.sets?.filter(s => s.done).length === 0 && (
+                      <span className="text-xs" style={{ color: COLORS.textSecondary }}>No sets logged</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {selectedLog.cardio && (
+                <p className="text-sm mt-2" style={{ color: COLORS.teal }}>
+                  ✅ Cardio completed{selectedLog.cardioNotes ? `: ${selectedLog.cardioNotes}` : ''}
+                </p>
+              )}
+            </Card>
+          )}
+
+          {!isToday && !selectedLog && (
+            <Card>
+              <p className="text-sm text-center" style={{ color: COLORS.textSecondary }}>
+                No workout logged for this day.
+              </p>
+            </Card>
+          )}
+
+          {/* Guidelines */}
+          <div className="rounded-xl border overflow-hidden"
+            style={{ backgroundColor: COLORS.card, borderColor: COLORS.border }}>
+            <button className="w-full flex items-center justify-between p-4"
+              onClick={() => setShowGuidelines(!showGuidelines)}>
+              <div className="flex items-center gap-2">
+                <Info size={16} color={COLORS.teal} />
+                <span className="font-semibold text-sm">Exercise Guidelines</span>
+              </div>
+              {showGuidelines ? <ChevronUp size={16} color={COLORS.textSecondary} /> : <ChevronDown size={16} color={COLORS.textSecondary} />}
+            </button>
+            {showGuidelines && (
+              <div className="px-4 pb-4 space-y-2">
+                {[
+                  '🔥 Warm up: Same exercise at 50–80% weight for 1–3 sets',
+                  '⚡ Stop 1–2 reps before failure (6–12 rep range)',
+                  '⏱ Tempo: 3s up, 1s pause, 3s down',
+                  '⏸ Rest 1–3 minutes between sets',
+                  '📈 Each week: increase 1–2 reps; once exceeding rep range, increase weight',
+                  '🆕 First week: do only 2 sets instead of 3',
+                ].map((tip, i) => (
+                  <p key={i} className="text-sm" style={{ color: COLORS.textSecondary }}>{tip}</p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Logger (today only) */}
+          {isToday && (
+            <WorkoutLogger workout={{ ...WORKOUTS[workout.type], type: workout.type }}
+              dateKey={dateKey} workoutLog={workoutLog} setWorkoutLog={setWorkoutLog} />
+          )}
+
+          <WorkoutHistory dateKey={dateKey} />
+        </>
+      )}
     </div>
   );
 };
@@ -1348,6 +1651,26 @@ export default function App() {
     }
     return () => stopNotifications();
   }, []);
+
+  // Listen for MARK_DONE actions from notification buttons (service worker)
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+    const handler = (event) => {
+      if (event.data?.type !== 'MARK_DONE') return;
+      const tag = event.data.tag;
+      const mealIds = ['meal1', 'meal2', 'meal3', 'meal4'];
+
+      if (tag.startsWith('meal-')) {
+        const idx = parseInt(tag.replace('meal-', ''), 10);
+        if (mealIds[idx]) {
+          setTodayMeals(prev => ({ ...prev, [mealIds[idx]]: true }));
+        }
+      }
+      // Water / workout done: just focus the app / no further state change needed
+    };
+    navigator.serviceWorker.addEventListener('message', handler);
+    return () => navigator.serviceWorker.removeEventListener('message', handler);
+  }, [setTodayMeals]);
 
   const tabs = [
     { id: 'today', label: 'Today', icon: Home },
