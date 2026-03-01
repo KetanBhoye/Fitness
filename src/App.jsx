@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Home, Utensils, Dumbbell, TrendingDown, Settings,
   CheckCircle, Plus, ChevronDown, ChevronUp, Flame,
-  Scale, RefreshCw, X, Check, Info, Moon, Bell, BellOff, Droplets, Clock
+  Scale, RefreshCw, X, Check, Info, Moon, Bell, BellOff, Droplets, Clock,
+  Download, Smartphone
 } from 'lucide-react';
 import {
   getNotificationSettings, saveNotificationSettings, requestPermission,
@@ -988,6 +989,104 @@ const SettingsRow = ({ label, value, children }) => (
   </div>
 );
 
+const InstallPrompt = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed as PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+    setIsInstalled(isStandalone);
+
+    // Detect iOS
+    const ua = window.navigator.userAgent;
+    const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    setIsIOS(iOS);
+
+    // Listen for Chrome/Android install prompt
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setIsInstalled(true);
+      setDeferredPrompt(null);
+    }
+  };
+
+  if (isInstalled) return null;
+
+  return (
+    <Card className="mb-4">
+      <div className="flex items-center gap-3 mb-3">
+        <Smartphone size={20} color={COLORS.accent} />
+        <p className="font-semibold" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem' }}>
+          Install App
+        </p>
+      </div>
+
+      {isIOS ? (
+        <div>
+          <p className="text-sm mb-3" style={{ color: COLORS.textSecondary }}>
+            Add this app to your iPhone home screen for the best experience:
+          </p>
+          <button onClick={() => setShowIOSGuide(!showIOSGuide)}
+            className="w-full py-2 rounded-xl text-sm font-semibold"
+            style={{ backgroundColor: COLORS.accent, color: '#0d0f14' }}>
+            {showIOSGuide ? 'Hide Instructions' : 'Show How to Install'}
+          </button>
+          {showIOSGuide && (
+            <div className="mt-3 space-y-3 text-sm" style={{ color: COLORS.textSecondary }}>
+              <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: '#1e2535' }}>
+                <span className="text-lg">1️⃣</span>
+                <p>Tap the <strong style={{ color: COLORS.textPrimary }}>Share</strong> button
+                  <span style={{ fontSize: '18px' }}> ⬆️</span> at the bottom of Safari</p>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: '#1e2535' }}>
+                <span className="text-lg">2️⃣</span>
+                <p>Scroll down and tap <strong style={{ color: COLORS.textPrimary }}>Add to Home Screen</strong></p>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: '#1e2535' }}>
+                <span className="text-lg">3️⃣</span>
+                <p>Tap <strong style={{ color: COLORS.textPrimary }}>Add</strong> in the top right corner</p>
+              </div>
+              <p className="text-xs italic" style={{ color: COLORS.teal }}>
+                The app will open in fullscreen mode like a native app!
+              </p>
+            </div>
+          )}
+        </div>
+      ) : deferredPrompt ? (
+        <div>
+          <p className="text-sm mb-3" style={{ color: COLORS.textSecondary }}>
+            Install this app on your device for offline access and a better experience.
+          </p>
+          <button onClick={handleInstall}
+            className="w-full py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+            style={{ backgroundColor: COLORS.accent, color: '#0d0f14' }}>
+            <Download size={16} /> Install App
+          </button>
+        </div>
+      ) : (
+        <p className="text-sm" style={{ color: COLORS.textSecondary }}>
+          Open this site in Chrome or Safari to install it as an app on your device.
+        </p>
+      )}
+    </Card>
+  );
+};
+
 const NotificationToggle = ({ label, icon: Icon, enabled, onToggle, description }) => (
   <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: COLORS.border }}>
     <div className="flex items-center gap-3">
@@ -1215,6 +1314,9 @@ const SettingsTab = ({ settings, setSettings }) => {
       <p className="text-xs text-center pb-4" style={{ color: COLORS.textSecondary }}>
         Ketan's Fitness Tracker v1.0 \u2022 Data synced to cloud
       </p>
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
     </div>
   );
 };

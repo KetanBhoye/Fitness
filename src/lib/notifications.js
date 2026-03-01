@@ -35,6 +35,13 @@ export function saveNotificationSettings(settings) {
     localStorage.setItem(NOTIFICATION_SETTINGS_KEY, JSON.stringify(settings));
     // Also sync to Supabase
     window.storage?.set(NOTIFICATION_SETTINGS_KEY, settings);
+    // Sync settings to service worker for background notifications
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SCHEDULE_NOTIFICATIONS',
+        settings,
+      });
+    }
   } catch (e) {
     void e;
   }
@@ -56,19 +63,40 @@ export async function requestPermission() {
 
 function sendNotification(title, body, tag) {
   if (Notification.permission !== 'granted') return;
-  try {
-    new Notification(title, {
-      body,
-      icon: '/vite.svg',
-      badge: '/vite.svg',
-      tag, // Prevents duplicate notifications with same tag
-      renotify: true,
+
+  // Prefer service worker notifications (works in background on mobile)
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'notification', title, body, tag });
+    return;
+  }
+
+  // Fallback: try service worker registration directly
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.showNotification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag,
+        renotify: true,
+        vibrate: [200, 100, 200],
+      });
+    }).catch(() => {
+      // Last resort: basic Notification API
+      try {
+        new Notification(title, { body, icon: '/icon-192.png', tag, renotify: true });
+      } catch {
+        // Silently fail
+      }
     });
+    return;
+  }
+
+  // No service worker: basic Notification API
+  try {
+    new Notification(title, { body, icon: '/icon-192.png', tag, renotify: true });
   } catch {
-    // Fallback for mobile/restricted environments
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'notification', title, body, tag });
-    }
+    // Silently fail
   }
 }
 
