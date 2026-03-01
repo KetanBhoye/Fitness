@@ -2,39 +2,19 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { supabaseStorage } from './lib/supabase.js'
 
-// Simple window.storage implementation backed by localStorage
-window.storage = {
-  get: (key) => {
-    try {
-      const val = localStorage.getItem(key);
-      return val ? JSON.parse(val) : null;
-    } catch {
-      return null;
-    }
-  },
-  set: (key, value) => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-      void e;
-    }
-  },
-  remove: (key) => {
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {
-      void e;
-    }
-  },
-  keys: () => {
-    try {
-      return Object.keys(localStorage);
-    } catch {
-      return [];
-    }
+// Supabase-backed storage (localStorage cache + cloud sync)
+window.storage = supabaseStorage;
+
+// Sync from Supabase on startup, then push any local-only data
+supabaseStorage.syncFromCloud().then((synced) => {
+  if (!synced) {
+    console.log('[Startup] Cloud sync failed, using local data');
   }
-};
+  // Push any existing localStorage data to Supabase (one-time migration)
+  supabaseStorage.pushToCloud();
+});
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

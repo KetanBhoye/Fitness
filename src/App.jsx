@@ -2,8 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Home, Utensils, Dumbbell, TrendingDown, Settings,
   CheckCircle, Plus, ChevronDown, ChevronUp, Flame,
-  Scale, RefreshCw, X, Check, Info, Moon
+  Scale, RefreshCw, X, Check, Info, Moon, Bell, BellOff, Droplets, Clock
 } from 'lucide-react';
+import {
+  getNotificationSettings, saveNotificationSettings, requestPermission,
+  startNotifications, stopNotifications, restartNotifications, sendTestNotification
+} from './lib/notifications.js';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, ReferenceLine
@@ -268,7 +272,7 @@ const TodayTab = ({ setActiveTab, todayMeals, steps, setSteps, settings }) => {
       <div>
         <h1 className="text-3xl font-bold"
           style={{ fontFamily: "'Barlow Condensed', sans-serif", color: COLORS.accent }}>
-          {greeting}, {USER.name.split(' ')[0]} \ud83d\udcaa
+          {greeting}, {USER.name.split(' ')[0]} 💪
         </h1>
         <p className="text-sm mt-1" style={{ color: COLORS.textSecondary }}>{formatDate(today)}</p>
       </div>
@@ -279,7 +283,7 @@ const TodayTab = ({ setActiveTab, todayMeals, steps, setSteps, settings }) => {
             <p className="text-xs uppercase tracking-wider mb-1" style={{ color: COLORS.textSecondary }}>Today's Workout</p>
             <p className="text-xl font-bold"
               style={{ fontFamily: "'Barlow Condensed', sans-serif", color: COLORS.textPrimary }}>
-              {getDayName(today)} \u2192 {workout.label}
+              {getDayName(today)} → {workout.label}
             </p>
           </div>
           <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
@@ -291,7 +295,7 @@ const TodayTab = ({ setActiveTab, todayMeals, steps, setSteps, settings }) => {
           <button onClick={() => setActiveTab('workout')}
             className="w-full py-2 rounded-2xl text-sm font-semibold"
             style={{ backgroundColor: COLORS.accent, color: '#0d0f14' }}>
-            Log Workout \u2192
+            Log Workout →
           </button>
         )}
       </Card>
@@ -364,7 +368,7 @@ const TodayTab = ({ setActiveTab, todayMeals, steps, setSteps, settings }) => {
         <button onClick={() => setActiveTab('meals')}
           className="w-full mt-3 py-2 rounded-xl text-sm font-semibold border"
           style={{ borderColor: COLORS.border, color: COLORS.textSecondary, backgroundColor: 'transparent' }}>
-          Log Meals \u2192
+          Log Meals →
         </button>
       </Card>
     </div>
@@ -411,14 +415,14 @@ const MealCard = ({ meal, isLogged, onToggle }) => {
           <ul className="space-y-1">
             {meal.items.map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <span style={{ color: COLORS.accent }}>\u2022</span>
+                <span style={{ color: COLORS.accent }}>•</span>
                 <span style={{ color: COLORS.textSecondary }}>{item}</span>
               </li>
             ))}
           </ul>
           <p className="text-xs italic px-2 py-1 rounded"
             style={{ color: COLORS.teal, backgroundColor: `${COLORS.teal}10` }}>
-            \ud83c\udfaf {meal.goal}
+            🎯 {meal.goal}
           </p>
           <button onClick={(e) => { e.stopPropagation(); setShowSwaps(!showSwaps); }}
             className="text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg border"
@@ -473,7 +477,7 @@ const MealsTab = ({ todayMeals, setTodayMeals }) => {
       ))}
       <Card>
         <p className="text-sm" style={{ color: COLORS.textSecondary }}>
-          \ud83fad <strong style={{ color: COLORS.textPrimary }}>Daily Cooking Oil:</strong> Up to 15ml Extra Virgin Olive Oil across all meals
+          🍳 <strong style={{ color: COLORS.textPrimary }}>Daily Cooking Oil:</strong> Up to 15ml Extra Virgin Olive Oil across all meals
         </p>
       </Card>
       <div className="rounded-xl border overflow-hidden"
@@ -578,7 +582,7 @@ const WorkoutLogger = ({ workout, dateKey, workoutLog, setWorkoutLog }) => {
               {hasPB && (
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold"
                   style={{ backgroundColor: `${COLORS.accent}20`, color: COLORS.accent }}>
-                  \ud83c\udfc6 PB!
+                  🏆 PB!
                 </span>
               )}
             </div>
@@ -683,7 +687,7 @@ const WorkoutHistory = ({ dateKey }) => {
                     {ex.sets?.filter(s => s.done).map((s, i) => (
                       <span key={i} className="px-2 py-0.5 rounded"
                         style={{ backgroundColor: '#1e2535', color: COLORS.textSecondary }}>
-                        {s.weight}kg \u00d7 {s.reps}
+                        {s.weight}kg × {s.reps}
                       </span>
                     ))}
                   </div>
@@ -709,7 +713,7 @@ const WorkoutTab = ({ workoutLog, setWorkoutLog }) => {
         <Moon size={64} color={COLORS.textSecondary} />
         <h2 className="text-3xl font-bold"
           style={{ fontFamily: "'Barlow Condensed', sans-serif", color: COLORS.accent }}>
-          Rest Day \ud83d\udecf
+          Rest Day 🛏️
         </h2>
         <p style={{ color: COLORS.textSecondary }}>Recovery is where growth happens.</p>
         <Card className="w-full text-left">
@@ -731,7 +735,7 @@ const WorkoutTab = ({ workoutLog, setWorkoutLog }) => {
         <h2 className="text-2xl font-bold" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
           {workoutData.name}
           <span className="ml-2 text-base font-normal" style={{ color: COLORS.textSecondary }}>
-            \u2014 Workout {workout.type}
+            — Workout {workout.type}
           </span>
         </h2>
         <p className="text-sm" style={{ color: COLORS.textSecondary }}>{getDayName(today)}, {dateKey}</p>
@@ -745,7 +749,7 @@ const WorkoutTab = ({ workoutLog, setWorkoutLog }) => {
           {workoutData.exercises.map((ex, i) => (
             <div key={i} className="flex justify-between text-sm">
               <span>{ex.name}</span>
-              <span style={{ color: COLORS.textSecondary }}>{ex.sets}\u00d7{ex.reps}</span>
+              <span style={{ color: COLORS.textSecondary }}>{ex.sets}×{ex.reps}</span>
             </div>
           ))}
         </div>
@@ -984,6 +988,25 @@ const SettingsRow = ({ label, value, children }) => (
   </div>
 );
 
+const NotificationToggle = ({ label, icon: Icon, enabled, onToggle, description }) => (
+  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: COLORS.border }}>
+    <div className="flex items-center gap-3">
+      <Icon size={18} color={enabled ? COLORS.accent : COLORS.textSecondary} />
+      <div>
+        <p className="text-sm" style={{ color: COLORS.textPrimary }}>{label}</p>
+        {description && <p className="text-xs" style={{ color: COLORS.textSecondary }}>{description}</p>}
+      </div>
+    </div>
+    <button onClick={onToggle}
+      className="w-11 h-6 rounded-full relative transition-colors duration-200"
+      style={{ backgroundColor: enabled ? COLORS.accent : '#1e2535' }}>
+      <div className="w-5 h-5 rounded-full absolute top-0.5 transition-all duration-200"
+        style={{ backgroundColor: enabled ? '#0d0f14' : COLORS.textSecondary,
+          left: enabled ? '22px' : '2px' }} />
+    </button>
+  </div>
+);
+
 const SettingsTab = ({ settings, setSettings }) => {
   const [editGoalWeight, setEditGoalWeight] = useState(false);
   const [editStepGoal, setEditStepGoal] = useState(false);
@@ -991,6 +1014,42 @@ const SettingsTab = ({ settings, setSettings }) => {
   const [tempStepGoal, setTempStepGoal] = useState(String(settings.stepGoal || USER.stepGoal));
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetDone, setResetDone] = useState(false);
+  const [notifSettings, setNotifSettings] = useState(getNotificationSettings);
+  const [notifPermission, setNotifPermission] = useState(
+    'Notification' in window ? Notification.permission : 'unsupported'
+  );
+
+  const toggleNotifications = async () => {
+    if (!notifSettings.enabled) {
+      const perm = await requestPermission();
+      setNotifPermission(perm);
+      if (perm !== 'granted') return;
+      const updated = { ...notifSettings, enabled: true };
+      setNotifSettings(updated);
+      saveNotificationSettings(updated);
+      startNotifications();
+      sendTestNotification();
+    } else {
+      const updated = { ...notifSettings, enabled: false };
+      setNotifSettings(updated);
+      saveNotificationSettings(updated);
+      stopNotifications();
+    }
+  };
+
+  const toggleNotifType = (type) => {
+    const updated = { ...notifSettings, [type]: !notifSettings[type] };
+    setNotifSettings(updated);
+    saveNotificationSettings(updated);
+    restartNotifications();
+  };
+
+  const updateWaterInterval = (mins) => {
+    const updated = { ...notifSettings, waterIntervalMin: mins };
+    setNotifSettings(updated);
+    saveNotificationSettings(updated);
+    restartNotifications();
+  };
 
   const handleSaveGoalWeight = () => {
     const w = parseFloat(tempGoalWeight);
@@ -1071,11 +1130,69 @@ const SettingsTab = ({ settings, setSettings }) => {
       </Card>
 
       <Card>
+        <p className="font-semibold mb-3" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem' }}>
+          <span className="flex items-center gap-2">
+            {notifSettings.enabled ? <Bell size={18} color={COLORS.accent} /> : <BellOff size={18} color={COLORS.textSecondary} />}
+            Notifications
+          </span>
+        </p>
+        {notifPermission === 'unsupported' ? (
+          <p className="text-sm" style={{ color: COLORS.danger }}>Your browser does not support notifications.</p>
+        ) : notifPermission === 'denied' ? (
+          <p className="text-sm" style={{ color: COLORS.danger }}>Notifications blocked. Please enable them in your browser settings.</p>
+        ) : (
+          <div>
+            <NotificationToggle label="Enable Reminders" icon={Bell}
+              enabled={notifSettings.enabled} onToggle={toggleNotifications}
+              description={notifSettings.enabled ? 'Reminders are active' : 'Turn on to get meal, workout & water reminders'} />
+            {notifSettings.enabled && (
+              <div className="mt-2 space-y-0">
+                <NotificationToggle label="Meal Reminders" icon={Utensils}
+                  enabled={notifSettings.meals} onToggle={() => toggleNotifType('meals')}
+                  description="Reminds you at each meal time" />
+                <NotificationToggle label="Workout Reminder" icon={Dumbbell}
+                  enabled={notifSettings.workout} onToggle={() => toggleNotifType('workout')}
+                  description={`Daily at ${notifSettings.workoutTime}`} />
+                <NotificationToggle label="Water Reminders" icon={Droplets}
+                  enabled={notifSettings.water} onToggle={() => toggleNotifType('water')}
+                  description={`Every ${notifSettings.waterIntervalMin} min (7 AM – 10 PM)`} />
+                {notifSettings.water && (
+                  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: COLORS.border }}>
+                    <div className="flex items-center gap-3">
+                      <Clock size={18} color={COLORS.textSecondary} />
+                      <p className="text-sm" style={{ color: COLORS.textPrimary }}>Water Interval</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {[30, 45, 60, 90, 120].map(m => (
+                        <button key={m} onClick={() => updateWaterInterval(m)}
+                          className="px-2 py-1 rounded text-xs font-semibold transition-colors"
+                          style={{
+                            backgroundColor: notifSettings.waterIntervalMin === m ? COLORS.accent : '#1e2535',
+                            color: notifSettings.waterIntervalMin === m ? '#0d0f14' : COLORS.textSecondary,
+                          }}>
+                          {m}m
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <button onClick={sendTestNotification}
+                  className="w-full mt-3 py-2 rounded-xl text-sm font-semibold border"
+                  style={{ borderColor: COLORS.border, color: COLORS.textSecondary, backgroundColor: 'transparent' }}>
+                  Send Test Notification
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
+
+      <Card>
         <p className="font-semibold mb-3" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem' }}>Data Management</p>
         {showResetConfirm ? (
           <div className="space-y-3">
             <p className="text-sm" style={{ color: COLORS.danger }}>
-              \u26a0\ufe0f This will delete all workout logs for the past 7 days. Are you sure?
+              ⚠️ This will delete all workout logs for the past 7 days. Are you sure?
             </p>
             <div className="flex gap-3">
               <button onClick={handleResetWeek}
@@ -1096,7 +1213,7 @@ const SettingsTab = ({ settings, setSettings }) => {
       </Card>
 
       <p className="text-xs text-center pb-4" style={{ color: COLORS.textSecondary }}>
-        Ketan's Fitness Tracker v1.0 \u2022 Data stored locally
+        Ketan's Fitness Tracker v1.0 \u2022 Data synced to cloud
       </p>
     </div>
   );
@@ -1119,6 +1236,15 @@ export default function App() {
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap';
     document.head.appendChild(link);
+  }, []);
+
+  // Start notifications on app load if previously enabled
+  useEffect(() => {
+    const notifSettings = getNotificationSettings();
+    if (notifSettings.enabled && 'Notification' in window && Notification.permission === 'granted') {
+      startNotifications();
+    }
+    return () => stopNotifications();
   }, []);
 
   const tabs = [
